@@ -600,7 +600,7 @@ export const convertUpdateFormat = (update, blockTransformer, YDecoder, YEncoder
 /**
  * @param {ObfuscatorOptions} obfuscator
  */
-const createObfuscator = ({ formatting = true, subdocs = true, yxml = true } = {}) => {
+export const createObfuscator = ({ formatting = true, subdocs = true, yxml = true } = {}) => {
   let i = 0
   const mapKeyCache = map.create()
   const nodeNameCache = map.create()
@@ -693,6 +693,18 @@ const createObfuscator = ({ formatting = true, subdocs = true, yxml = true } = {
 }
 
 /**
+ * Return the passed in obfuscator or create one from options
+ * @param {ObfuscatorOptions|function(Item|GC|Skip):Item|GC|Skip} [optsOrObfuscator]
+ */
+const getOrCreateObfuscator = (optsOrObfuscator) => {
+  if (typeof optsOrObfuscator === 'function') {
+    return optsOrObfuscator
+  }
+
+  return createObfuscator(optsOrObfuscator)
+}
+
+/**
  * This function obfuscates the content of a Yjs update. This is useful to share
  * buggy Yjs documents while significantly limiting the possibility that a
  * developer can on the user. Note that it might still be possible to deduce
@@ -701,15 +713,15 @@ const createObfuscator = ({ formatting = true, subdocs = true, yxml = true } = {
  * intact.
  *
  * @param {Uint8Array} update
- * @param {ObfuscatorOptions} [opts]
+ * @param {ObfuscatorOptions|function(Item|GC|Skip):Item|GC|Skip}  [opts]
  */
-export const obfuscateUpdate = (update, opts) => convertUpdateFormat(update, createObfuscator(opts), UpdateDecoderV1, UpdateEncoderV1)
+export const obfuscateUpdate = (update, opts) => convertUpdateFormat(update, getOrCreateObfuscator(opts), UpdateDecoderV1, UpdateEncoderV1)
 
 /**
  * @param {Uint8Array} update
- * @param {ObfuscatorOptions} [opts]
+ * @param {ObfuscatorOptions|function(Item|GC|Skip):Item|GC|Skip}  [opts]
  */
-export const obfuscateUpdateV2 = (update, opts) => convertUpdateFormat(update, createObfuscator(opts), UpdateDecoderV2, UpdateEncoderV2)
+export const obfuscateUpdateV2 = (update, opts) => convertUpdateFormat(update, getOrCreateObfuscator(opts), UpdateDecoderV2, UpdateEncoderV2)
 
 /**
  * @param {Uint8Array} update

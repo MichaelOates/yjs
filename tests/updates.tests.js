@@ -355,3 +355,34 @@ export const testObfuscateUpdates = _tc => {
   // test subdoc
   t.assert(osubdoc.guid !== subdoc.guid)
 }
+
+/**
+ * @param {t.TestCase} _tc
+ */
+export const testReuseObfuscator = _tc => {
+  /**
+   * @type {Array<Uint8Array>}
+   */
+  const allUpdates = [];
+  const ydoc = new Y.Doc()
+  ydoc.on('update', update => {
+    allUpdates.push(update);
+  });
+
+  const map = ydoc.getMap('test-map');
+  map.set('property-1', 'a');
+  map.set('property-2', 'b');
+  map.set('property-1', 'c');
+  
+  const obfuscator = Y.createObfuscator();
+  
+  const obfuscatedDocument = new Y.Doc();
+  for (const update of allUpdates) {
+    Y.applyUpdate(obfuscatedDocument, Y.obfuscateUpdate(update, obfuscator));
+  }
+
+  t.compareObjects(obfuscatedDocument.getMap('test-map').toJSON(), {
+    "0": 2,
+    "1": 1
+  })
+}
